@@ -1,0 +1,76 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: anr-backend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - SERVER_ENV=production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-anr_user}
+      - DB_PASSWORD=${DB_PASSWORD:-anr_password}
+      - DB_NAME=${DB_NAME:-anr_platform}
+      - DB_SSLMODE=disable
+      - DB_ENABLED=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_ENABLED=true
+      - JWT_SECRET=${JWT_SECRET:-please_set_a_secure_jwt_secret_in_production_min_32_chars}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - anr-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: anr-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER:-anr_user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-anr_password}
+      - POSTGRES_DB=${DB_NAME:-anr_platform}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations/000001_init_platform.up.sql:/docker-entrypoint-initdb.d/01_init_platform.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-anr_user} -d ${DB_NAME:-anr_platform}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - anr-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: anr-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - anr-network
+
+networks:
+  anr-network:
+    name: anr-network
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: anr-postgres-data
+  redis_data:
+    name: anr-redis-data

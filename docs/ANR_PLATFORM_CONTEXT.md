@@ -755,8 +755,34 @@ Yêu cầu:
 Clean Architecture không đồng nghĩa tạo tối đa folder. Mục tiêu là
 boundary rõ và maintainable.
 
-Internal Go structure sẽ được **chốt một lần**, cập nhật vào file này
-rồi giữ ổn định.
+### Final Go Backend Package Layout (LOCKED)
+
+``` text
+backend/
+├── cmd/
+│   ├── server/                 # Composition root (main.go)
+│   └── migrate/                # Migration runner CLI
+├── internal/
+│   ├── config/                 # 12-factor configuration (config.go)
+│   ├── database/               # PostgreSQL pgxpool connection pool (postgres.go)
+│   ├── cache/                  # Redis client wrapper (redis.go)
+│   ├── platform/               # Shared Core Platform domains
+│   │   ├── auth/               # First-party Auth domain & ports
+│   │   ├── user/               # User domain & ports
+│   │   ├── device/             # Device registration & binding
+│   │   └── app/                # App registry & Remote Config
+│   ├── modules/                # App-specific modules (anr-NNN-slug)
+│   └── transport/
+│       └── http/               # HTTP Delivery layer
+│           ├── router.go       # Chi router & route registration
+│           ├── middleware/     # Slog, RequestID, CORS, Recovery
+│           ├── handler/        # HTTP handlers (/livez, /readyz, /healthz)
+│           └── response/       # Standard JSON envelopes & error mapping
+├── migrations/                 # SQL migration files
+├── Dockerfile                  # Multi-stage production build
+├── Makefile                    # Build & run scripts
+└── go.mod
+```
 
 ------------------------------------------------------------------------
 
@@ -824,6 +850,8 @@ dù cùng monorepo.
 -   [x] GitHub repository/push
 -   [x] Technical docs started
 -   [x] Master Context
+-   [x] Go backend bootstrap (Chi router, Slog, Graceful shutdown, Health endpoints)
+-   [x] Final Go package architecture (Clean Architecture + Modular Monolith)
 
 ## Cleanup
 
@@ -831,8 +859,6 @@ dù cùng monorepo.
 
 ## Pending
 
--   [ ] Go backend bootstrap
--   [ ] Final Go package architecture
 -   [ ] First-party Auth
 -   [ ] PostgreSQL
 -   [ ] Database schema
@@ -854,22 +880,14 @@ dù cùng monorepo.
 
 # 29. Immediate Next Milestone
 
-**Initialize Go backend trong `backend/`.**
+**Triển khai First-party Go Auth và Core Platform Data Layer.**
 
-Trước business logic:
-
-1.  Go module.
-2.  Stable package structure.
-3.  Configuration strategy.
-4.  App bootstrap.
-5.  HTTP server.
-6.  Health endpoint.
-7.  Structured logging.
-8.  Graceful shutdown.
-9.  Database/migration strategy.
-10. Update final backend structure vào Master Context.
-
-Sau khi skeleton ổn mới triển khai Auth và app modules.
+Tiếp theo:
+1. Hoàn thiện entity & repository interface cho `platform/auth`, `platform/user`, `platform/app`.
+2. Chạy migration schema khởi đầu lên PostgreSQL.
+3. Token generation (Access Token + Refresh Token), password hashing (bcrypt/argon2id).
+4. Auth HTTP middleware cho các route cần bảo vệ.
+5. Setup Nginx reverse proxy hoặc Docker network kết nối services.
 
 ------------------------------------------------------------------------
 
@@ -881,6 +899,16 @@ Sau khi skeleton ổn mới triển khai Auth và app modules.
   Repository              Monorepo `anr-platform` LOCKED
 
   Backend                 Go                      LOCKED
+
+  Backend Architecture    Clean Architecture +    LOCKED
+                          Modular Monolith        
+
+  Dependency Injection    Manual Constructor      LOCKED
+                          Injection               
+
+  HTTP Router             `go-chi/chi/v5`         LOCKED
+
+  Database Driver         `pgx/v5` (pgxpool)      LOCKED
 
   Authentication          First-party Go Auth     LOCKED
 
