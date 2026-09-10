@@ -1,10 +1,9 @@
 # macOS
 .DS_Store
 
-# IDE & Local Agents
+# IDE
 .vscode/
 .idea/
-.claude/
 
 # Env
 .env
