@@ -39,3 +39,8 @@ CREATE TABLE IF NOT EXISTS devices (
 
 CREATE INDEX IF NOT EXISTS idx_devices_app_id ON devices(app_id);
 CREATE INDEX IF NOT EXISTS idx_devices_user_id ON devices(user_id);
+
+INSERT INTO applications (app_id, name, description) 
+VALUES ('anr-001-wallpaper', 'ANR Wallpaper', 'ANR Wallpaper Application') 
+ON CONFLICT (app_id) DO NOTHING;
+
