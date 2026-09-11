@@ -852,6 +852,7 @@ dù cùng monorepo.
 -   [x] Master Context
 -   [x] Go backend bootstrap (Chi router, Slog, Graceful shutdown, Health endpoints)
 -   [x] Final Go package architecture (Clean Architecture + Modular Monolith)
+-   [x] Device Guest Authentication & JWT Session (First-party Auth)
 
 ## Cleanup
 

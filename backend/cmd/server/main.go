@@ -14,6 +14,8 @@ import (
 	"github.com/anr-2609/anr-platform/backend/internal/cache"
 	"github.com/anr-2609/anr-platform/backend/internal/config"
 	"github.com/anr-2609/anr-platform/backend/internal/database"
+	"github.com/anr-2609/anr-platform/backend/internal/platform/auth"
+	"github.com/anr-2609/anr-platform/backend/internal/platform/device"
 	transporthttp "github.com/anr-2609/anr-platform/backend/internal/transport/http"
 	"github.com/anr-2609/anr-platform/backend/internal/transport/http/handler"
 )
@@ -26,13 +28,11 @@ func main() {
 }
 
 func run() error {
-	// 1. Tải cấu hình môi trường
 	cfg, err := config.Load()
 	if err != nil {
 		return fmt.Errorf("loading configuration: %w", err)
 	}
 
-	// 2. Khởi tạo Structured Logger (slog)
 	var logHandler slog.Handler
 	if cfg.Server.Environment == "production" {
 		logHandler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})
@@ -47,7 +47,6 @@ func run() error {
 		slog.String("port", cfg.Server.Port),
 	)
 
-	// 3. Khởi tạo Database (nếu enabled)
 	var db *database.Postgres
 	if cfg.Database.ConnectionEnabled {
 		logger.Info("connecting to PostgreSQL database...", slog.String("host", cfg.Database.Host))
@@ -63,7 +62,6 @@ func run() error {
 		logger.Info("PostgreSQL connection disabled by configuration")
 	}
 
-	// 4. Khởi tạo Redis Cache (nếu enabled)
 	var redisCache *cache.Redis
 	if cfg.Redis.Enabled {
 		logger.Info("connecting to Redis...", slog.String("host", cfg.Redis.Host))
@@ -79,7 +77,6 @@ func run() error {
 		logger.Info("Redis connection disabled by configuration")
 	}
 
-	// 5. Khởi tạo Handlers (Manual Constructor Injection)
 	var dbPinger handler.Pinger
 	if db != nil {
 		dbPinger = db
@@ -90,13 +87,28 @@ func run() error {
 	}
 	healthHandler := handler.NewHealthHandler(dbPinger, cachePinger)
 
-	// 6. Khởi tạo Router & Middleware
+	var deviceRepo device.Repository
+	if db != nil && db.Pool != nil {
+		deviceRepo = device.NewPostgresRepository(db.Pool)
+	} else {
+		deviceRepo = device.NewMemoryRepository()
+	}
+	deviceService := device.NewService(deviceRepo)
+
+	tokenService := auth.NewTokenService(
+		cfg.Auth.JWTSecret,
+		cfg.Auth.AccessTokenTTL,
+		cfg.Auth.RefreshTokenTTL,
+	)
+	authHandler := handler.NewAuthHandler(deviceService, tokenService)
+
 	router := transporthttp.NewRouter(transporthttp.RouterConfig{
 		Logger:        logger,
 		HealthHandler: healthHandler,
+		AuthHandler:   authHandler,
+		TokenService:  tokenService,
 	})
 
-	// 7. Khởi tạo HTTP Server
 	server := &http.Server{
 		Addr:         ":" + cfg.Server.Port,
 		Handler:      router,
@@ -105,7 +117,6 @@ func run() error {
 		IdleTimeout:  cfg.Server.IdleTimeout,
 	}
 
-	// 8. Lắng nghe tín hiệu Graceful Shutdown từ OS
 	serverErrors := make(chan error, 1)
 	go func() {
 		logger.Info("server is listening", slog.String("address", server.Addr))
