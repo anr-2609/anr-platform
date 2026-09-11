@@ -33,3 +33,5 @@ build/
 # Temporary
 tmp/
 temp/
+infrastructure/gateway/certbot/conf/
+infrastructure/gateway/certbot/www/
