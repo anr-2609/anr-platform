@@ -59,7 +59,6 @@ Chịu trách nhiệm:
 -   Device
 -   Subscription
 -   Analytics
--   Remote Config
 -   App Management
 -   API cho tất cả app
 
@@ -73,7 +72,6 @@ Chức năng:
 
 -   Quản lý người dùng
 -   Quản lý ứng dụng
--   Remote Config
 -   Subscription
 -   Analytics
 -   Nhật ký hệ thống

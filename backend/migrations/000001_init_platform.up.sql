@@ -47,17 +47,4 @@ CREATE TABLE IF NOT EXISTS devices (
 CREATE INDEX IF NOT EXISTS idx_devices_app_id ON devices(app_id);
 CREATE INDEX IF NOT EXISTS idx_devices_user_id ON devices(user_id);
 
--- 4. Remote Config
-CREATE TABLE IF NOT EXISTS remote_configs (
-    id BIGSERIAL PRIMARY KEY,
-    app_id VARCHAR(64) NOT NULL REFERENCES applications(app_id) ON DELETE CASCADE,
-    config_key VARCHAR(128) NOT NULL,
-    config_value JSONB NOT NULL DEFAULT '{}'::jsonb,
-    environment VARCHAR(32) NOT NULL DEFAULT 'production', -- production, staging, development
-    is_active BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT uq_app_config_env UNIQUE (app_id, config_key, environment)
-);
 
-CREATE INDEX IF NOT EXISTS idx_remote_configs_lookup ON remote_configs(app_id, environment, is_active);

@@ -110,8 +110,7 @@ Phạm vi:
 -   Users
 -   Devices
 -   Apps
--   App configuration
--   Remote Config
+-   App metadata & versioning (Feature flags & remote config dùng trực tiếp Firebase Remote Config trên mobile app)
 -   Subscription state
 -   API access
 -   Admin operations
@@ -133,8 +132,6 @@ Dự kiến quản lý:
 -   Users
 -   Devices
 -   App versions
--   Remote Config
--   Feature flags/config
 -   Subscriptions
 -   API usage
 -   Analytics/revenue integrations
@@ -769,8 +766,7 @@ backend/
 │   ├── platform/               # Shared Core Platform domains
 │   │   ├── auth/               # First-party Auth domain & ports
 │   │   ├── user/               # User domain & ports
-│   │   ├── device/             # Device registration & binding
-│   │   └── app/                # App registry & Remote Config
+│   │   └── device/             # Device registration & binding
 │   ├── modules/                # App-specific modules (anr-NNN-slug)
 │   └── transport/
 │       └── http/               # HTTP Delivery layer
@@ -800,7 +796,6 @@ Admin
 ├── Users
 ├── Devices
 ├── Subscriptions
-├── Remote Config
 ├── Analytics
 ├── Operations
 └── Settings
@@ -912,6 +907,11 @@ Tiếp theo:
   Database Driver         `pgx/v5` (pgxpool)      LOCKED
 
   Authentication          First-party Go Auth     LOCKED
+                          (Guest Device Session)  
+
+  Remote Config           Firebase Remote Config  LOCKED
+                          trực tiếp trên mobile,  
+                          không làm trên Go BE    
 
   App ID                  `anr-NNN-slug`          LOCKED
 
