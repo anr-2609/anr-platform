@@ -594,9 +594,9 @@ GitHub Actions
  Docker Compose
 ```
 
-CI/CD **chưa hoàn thành**.
+CI/CD đã được thiết lập với GitHub Actions (`.github/workflows/ci.yml` và `.github/workflows/deploy.yml`).
 
-Mục tiêu cuối là giảm tối đa manual SSH deployment.
+Mục tiêu là tự động hóa kiểm thử và triển khai qua SSH lên VPS.
 
 ------------------------------------------------------------------------
 
@@ -848,27 +848,22 @@ dù cùng monorepo.
 -   [x] Go backend bootstrap (Chi router, Slog, Graceful shutdown, Health endpoints)
 -   [x] Final Go package architecture (Clean Architecture + Modular Monolith)
 -   [x] Device Guest Authentication & JWT Session (First-party Auth)
+-   [x] PostgreSQL 16 & Redis 7 integration
+-   [x] Database schema & Migrations
+-   [x] Nginx Reverse Proxy Gateway & Subdomain Routing
+-   [x] TLS Automation (Let's Encrypt / Certbot)
+-   [x] Landing Web (Next.js 14 standalone)
+-   [x] Admin Dashboard (Next.js 14 standalone + Auth guard)
+-   [x] Automated Database Backups & Restore scripts
+-   [x] CI/CD Workflows (GitHub Actions)
 
 ## Cleanup
 
--   [ ] Disable SSH password authentication again
+-   [x] Disable SSH password authentication again
 
 ## Pending
 
--   [ ] First-party Auth
--   [ ] PostgreSQL
--   [ ] Database schema
--   [ ] Migrations
--   [ ] Redis
--   [ ] Nginx
--   [ ] Domain routing
--   [ ] TLS automation
--   [ ] Landing
--   [ ] Admin
--   [ ] Monitoring
--   [ ] CI/CD
--   [ ] Automated backups
--   [ ] Restore test
+-   [ ] Monitoring (Prometheus, Grafana, Uptime Kuma)
 -   [ ] Firewall/security hardening review
 -   [ ] Portainer exposure hardening
 
@@ -876,14 +871,12 @@ dù cùng monorepo.
 
 # 29. Immediate Next Milestone
 
-**Triển khai First-party Go Auth và Core Platform Data Layer.**
+**Triển khai Monitoring Stack (Milestone 9).**
 
 Tiếp theo:
-1. Hoàn thiện entity & repository interface cho `platform/auth`, `platform/user`, `platform/app`.
-2. Chạy migration schema khởi đầu lên PostgreSQL.
-3. Token generation (Access Token + Refresh Token), password hashing (bcrypt/argon2id).
-4. Auth HTTP middleware cho các route cần bảo vệ.
-5. Setup Nginx reverse proxy hoặc Docker network kết nối services.
+1. Thiết lập Prometheus thu thập metrics (node-exporter, cAdvisor, Go backend metrics).
+2. Triển khai Grafana và xây dựng dashboard giám sát tài nguyên VPS và HTTP metrics.
+3. Thiết lập Uptime Kuma theo dõi availability của các domain và endpoints.
 
 ------------------------------------------------------------------------
 
