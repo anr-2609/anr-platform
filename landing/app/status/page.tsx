@@ -77,7 +77,6 @@ export default function StatusPage() {
   return (
     <div style={{
       minHeight: "100vh",
-      minHeight: "100dvh",
       background: "#000000",
       backgroundImage: "radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.04) 0%, rgba(0, 0, 0, 0.98) 75%)",
       color: "#ffffff",
