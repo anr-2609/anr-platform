@@ -609,7 +609,7 @@ Planned:
 -   Uptime Kuma: availability checks.
 -   Portainer: container operations.
 
-Monitoring stack chưa được đánh dấu completed.
+Monitoring stack đã được triển khai đầy đủ bao gồm Prometheus, Grafana, Uptime Kuma và Node Exporter.
 
 ------------------------------------------------------------------------
 
@@ -856,6 +856,7 @@ dù cùng monorepo.
 -   [x] Admin Dashboard (Next.js 14 standalone + Auth guard)
 -   [x] Automated Database Backups & Restore scripts
 -   [x] CI/CD Workflows (GitHub Actions)
+-   [x] Monitoring Stack (Prometheus, Grafana, Uptime Kuma, Node Exporter)
 
 ## Cleanup
 
@@ -863,7 +864,6 @@ dù cùng monorepo.
 
 ## Pending
 
--   [ ] Monitoring (Prometheus, Grafana, Uptime Kuma)
 -   [ ] Firewall/security hardening review
 -   [ ] Portainer exposure hardening
 
@@ -871,12 +871,11 @@ dù cùng monorepo.
 
 # 29. Immediate Next Milestone
 
-**Triển khai Monitoring Stack (Milestone 9).**
+**Bảo mật & Tối ưu hóa vận hành (Firewall/Security Hardening & Portainer Exposure).**
 
 Tiếp theo:
-1. Thiết lập Prometheus thu thập metrics (node-exporter, cAdvisor, Go backend metrics).
-2. Triển khai Grafana và xây dựng dashboard giám sát tài nguyên VPS và HTTP metrics.
-3. Thiết lập Uptime Kuma theo dõi availability của các domain và endpoints.
+1. Rà soát cấu hình tường lửa UFW và Portainer access rules.
+2. Kiểm tra log và tối ưu hóa hệ thống vận hành thực tế.
 
 ------------------------------------------------------------------------
 

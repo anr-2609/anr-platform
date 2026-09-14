@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/anr-2609/anr-platform/backend/internal/platform/auth"
 	"github.com/anr-2609/anr-platform/backend/internal/transport/http/handler"
@@ -42,6 +43,7 @@ func NewRouter(cfg RouterConfig) http.Handler {
 	r.Get("/livez", cfg.HealthHandler.Livez)
 	r.Get("/readyz", cfg.HealthHandler.Readyz)
 	r.Get("/healthz", cfg.HealthHandler.Healthz)
+	r.Handle("/metrics", promhttp.Handler())
 
 	r.Route("/api/v1", func(v1 chi.Router) {
 		v1.Route("/auth", func(authRouter chi.Router) {

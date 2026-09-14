@@ -15,6 +15,8 @@ services:
       - backend
       - landing
       - admin
+      - uptime-kuma
+      - grafana
     networks:
       - anr-network
 
@@ -116,6 +118,63 @@ services:
     networks:
       - anr-network
 
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: anr-uptime-kuma
+    restart: unless-stopped
+    volumes:
+      - uptime_kuma_data:/app/data
+    networks:
+      - anr-network
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: anr-prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./infrastructure/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - anr-network
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: anr-node-exporter
+    restart: unless-stopped
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - anr-network
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: anr-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin123@anr}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=https://grafana.anr-studio.com
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - anr-network
+
 networks:
   anr-network:
     name: anr-network
@@ -126,3 +185,10 @@ volumes:
     name: anr-postgres-data
   redis_data:
     name: anr-redis-data
+  uptime_kuma_data:
+    name: anr-uptime-kuma-data
+  prometheus_data:
+    name: anr-prometheus-data
+  grafana_data:
+    name: anr-grafana-data
+
