@@ -35,3 +35,5 @@ tmp/
 temp/
 infrastructure/gateway/certbot/conf/
 infrastructure/gateway/certbot/www/
+infrastructure/storage/backups/
+*.sql.gz
