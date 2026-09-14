@@ -24,7 +24,7 @@ export default function AdminOverviewPage() {
     apps_count: 1,
     devices_count: 0,
     users_count: 1,
-    status: "connecting",
+    status: "operational",
   });
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,36 +68,51 @@ export default function AdminOverviewPage() {
   }, []);
 
   return (
-    <div>
-      <div className="top-bar">
-        <h1>Platform Overview</h1>
-        <span className="env-badge">Production</span>
+    <>
+      <div className="page-title-row">
+        <div className="page-title-wrap">
+          <h1 className="page-title">Platform Overview</h1>
+          <span className="page-subtitle">Real-time ecosystem metrics & device activity</span>
+        </div>
       </div>
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-label">Applications</div>
-          <div className="stat-value">{overview.apps_count}</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Registered Devices</div>
-          <div className="stat-value">{overview.devices_count}</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Admin Accounts</div>
-          <div className="stat-value">{overview.users_count}</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Core Engine</div>
-          <div className="stat-value" style={{ color: "var(--success)" }}>
-            {overview.status}
+          <span className="stat-icon">+</span>
+          <div className="stat-value-wrap">
+            <span className="stat-value">{overview.apps_count}</span>
           </div>
+          <span className="stat-label">Applications</span>
+        </div>
+
+        <div className="stat-card">
+          <span className="stat-icon">*</span>
+          <div className="stat-value-wrap">
+            <span className="stat-value">{overview.devices_count}</span>
+          </div>
+          <span className="stat-label">Registered Devices</span>
+        </div>
+
+        <div className="stat-card">
+          <span className="stat-icon">#</span>
+          <div className="stat-value-wrap">
+            <span className="stat-value">{overview.users_count}</span>
+          </div>
+          <span className="stat-label">Admin Accounts</span>
+        </div>
+
+        <div className="stat-card">
+          <span className="stat-icon">%</span>
+          <div className="stat-value-wrap">
+            <span className="stat-value status-text">{overview.status}</span>
+          </div>
+          <span className="stat-label">Core Engine</span>
         </div>
       </div>
 
       <div id="apps" className="table-card">
         <div className="table-header">
-          <h2>Ecosystem Applications</h2>
+          <h2 className="table-title">Ecosystem Applications</h2>
         </div>
         <table className="data-table">
           <thead>
@@ -110,10 +125,15 @@ export default function AdminOverviewPage() {
           </thead>
           <tbody>
             <tr>
-              <td><code>anr-001-wallpaper</code></td>
+              <td><span className="code-pill">anr-001-wallpaper</span></td>
               <td>ANR Wallpaper</td>
-              <td><span className="badge-active">active</span></td>
-              <td>Android / iOS</td>
+              <td>
+                <span className="badge-status">
+                  <span className="badge-status-dot" />
+                  Active
+                </span>
+              </td>
+              <td>Android</td>
             </tr>
           </tbody>
         </table>
@@ -121,12 +141,12 @@ export default function AdminOverviewPage() {
 
       <div id="devices" className="table-card">
         <div className="table-header">
-          <h2>Registered Devices</h2>
+          <h2 className="table-title">Registered Devices</h2>
         </div>
         {loading ? (
-          <p style={{ color: "var(--text-secondary)" }}>Loading devices...</p>
+          <p className="table-empty">Loading devices...</p>
         ) : devices.length === 0 ? (
-          <p style={{ color: "var(--text-secondary)" }}>No devices registered yet.</p>
+          <p className="table-empty">No devices registered yet.</p>
         ) : (
           <table className="data-table">
             <thead>
@@ -142,7 +162,7 @@ export default function AdminOverviewPage() {
             <tbody>
               {devices.map((d) => (
                 <tr key={d.id}>
-                  <td><code>{d.device_id}</code></td>
+                  <td><span className="code-pill">{d.device_id}</span></td>
                   <td>{d.app_id}</td>
                   <td>{d.platform}</td>
                   <td>{d.os_version || "N/A"}</td>
@@ -154,6 +174,6 @@ export default function AdminOverviewPage() {
           </table>
         )}
       </div>
-    </div>
+    </>
   );
 }

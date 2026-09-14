@@ -44,13 +44,21 @@ export default function LoginPage() {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
+          <div className="login-logo">
+            <img
+              src="/assets/logo.webp?v=2"
+              alt="ANR Studio"
+              width={40}
+              height={40}
+            />
+          </div>
           <h1 className="login-title">ANR PLATFORM</h1>
-          <p className="login-subtitle">Sign in to Admin Dashboard</p>
+          <p className="login-subtitle">Sign in to Admin Console</p>
         </div>
 
         {error && <div className="form-error">{error}</div>}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
             <label className="form-label">Email Address</label>
             <input

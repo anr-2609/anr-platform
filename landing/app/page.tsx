@@ -192,7 +192,7 @@ export default function HomePage() {
             }}
           >
             <img
-              src="/assets/logo.webp"
+              src="/assets/logo.webp?v=2"
               alt="ANR Studio"
               width={52}
               height={52}
@@ -437,6 +437,15 @@ export default function HomePage() {
                     <p className="modal-feature-desc">
                       Containerized Docker deployments monitored 24/7 with Prometheus and Grafana.
                     </p>
+                  </div>
+                  <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
+                    <a
+                      href="/status"
+                      className="modal-play-btn"
+                      style={{ padding: "8px 16px", fontSize: "12.5px" }}
+                    >
+                      <i className="fa-solid fa-heart-pulse" /> Live Status Page
+                    </a>
                   </div>
                 </div>
               )}
