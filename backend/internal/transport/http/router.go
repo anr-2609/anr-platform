@@ -18,6 +18,7 @@ type RouterConfig struct {
 	Logger        *slog.Logger
 	HealthHandler *handler.HealthHandler
 	AuthHandler   *handler.AuthHandler
+	AdminHandler  *handler.AdminHandler
 	TokenService  *auth.TokenService
 }
 
@@ -46,6 +47,9 @@ func NewRouter(cfg RouterConfig) http.Handler {
 		v1.Route("/auth", func(authRouter chi.Router) {
 			authRouter.Post("/device-session", cfg.AuthHandler.DeviceSession)
 			authRouter.Post("/refresh", cfg.AuthHandler.Refresh)
+			if cfg.AdminHandler != nil {
+				authRouter.Post("/login", cfg.AdminHandler.Login)
+			}
 		})
 
 		v1.Group(func(protected chi.Router) {
@@ -74,13 +78,16 @@ func NewRouter(cfg RouterConfig) http.Handler {
 			})
 		})
 
-		v1.Route("/admin", func(admin chi.Router) {
-			admin.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-				response.JSON(w, http.StatusOK, map[string]string{
-					"message": "admin endpoint placeholder",
-				})
+		if cfg.AdminHandler != nil {
+			v1.Route("/admin", func(admin chi.Router) {
+				admin.Use(auth.RequireUserAuth(cfg.TokenService))
+				admin.Use(auth.RequireRole("admin"))
+
+				admin.Get("/overview", cfg.AdminHandler.Overview)
+				admin.Get("/apps", cfg.AdminHandler.ListApps)
+				admin.Get("/devices", cfg.AdminHandler.ListDevices)
 			})
-		})
+		}
 	})
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {

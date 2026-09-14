@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 
@@ -18,6 +19,8 @@ var (
 type Repository interface {
 	Upsert(ctx context.Context, d *Device) (*Device, error)
 	GetByDeviceAndApp(ctx context.Context, deviceID, appID string) (*Device, error)
+	List(ctx context.Context, limit, offset int) ([]*Device, error)
+	Count(ctx context.Context) (int64, error)
 }
 
 type PostgresRepository struct {
@@ -107,6 +110,60 @@ func (r *PostgresRepository) GetByDeviceAndApp(ctx context.Context, deviceID, ap
 	return &d, nil
 }
 
+func (r *PostgresRepository) List(ctx context.Context, limit, offset int) ([]*Device, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	query := `
+		SELECT id, device_id, app_id, user_id, platform, os_version, app_version, push_token, last_active_at, created_at, updated_at
+		FROM devices
+		ORDER BY last_active_at DESC
+		LIMIT $1 OFFSET $2
+	`
+
+	rows, err := r.pool.Query(ctx, query, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("listing devices: %w", err)
+	}
+	defer rows.Close()
+
+	var devices []*Device
+	for rows.Next() {
+		var d Device
+		if err := rows.Scan(
+			&d.ID,
+			&d.DeviceID,
+			&d.AppID,
+			&d.UserID,
+			&d.Platform,
+			&d.OSVersion,
+			&d.AppVersion,
+			&d.PushToken,
+			&d.LastActiveAt,
+			&d.CreatedAt,
+			&d.UpdatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("scanning device: %w", err)
+		}
+		devices = append(devices, &d)
+	}
+
+	return devices, nil
+}
+
+func (r *PostgresRepository) Count(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM devices`).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("counting devices: %w", err)
+	}
+	return count, nil
+}
+
 type MemoryRepository struct {
 	mu      sync.RWMutex
 	devices map[string]*Device
@@ -169,4 +226,37 @@ func (m *MemoryRepository) GetByDeviceAndApp(ctx context.Context, deviceID, appI
 
 	copyDevice := *d
 	return &copyDevice, nil
+}
+
+func (m *MemoryRepository) List(ctx context.Context, limit, offset int) ([]*Device, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	var list []*Device
+	for _, d := range m.devices {
+		copyDevice := *d
+		list = append(list, &copyDevice)
+	}
+
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].LastActiveAt.After(list[j].LastActiveAt)
+	})
+
+	if offset >= len(list) {
+		return []*Device{}, nil
+	}
+
+	end := offset + limit
+	if limit <= 0 || end > len(list) {
+		end = len(list)
+	}
+
+	return list[offset:end], nil
+}
+
+func (m *MemoryRepository) Count(ctx context.Context) (int64, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	return int64(len(m.devices)), nil
 }

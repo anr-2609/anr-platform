@@ -16,6 +16,7 @@ import (
 	"github.com/anr-2609/anr-platform/backend/internal/database"
 	"github.com/anr-2609/anr-platform/backend/internal/platform/auth"
 	"github.com/anr-2609/anr-platform/backend/internal/platform/device"
+	"github.com/anr-2609/anr-platform/backend/internal/platform/user"
 	transporthttp "github.com/anr-2609/anr-platform/backend/internal/transport/http"
 	"github.com/anr-2609/anr-platform/backend/internal/transport/http/handler"
 )
@@ -102,10 +103,27 @@ func run() error {
 	)
 	authHandler := handler.NewAuthHandler(deviceService, tokenService)
 
+	var userRepo user.Repository
+	if db != nil && db.Pool != nil {
+		userRepo = user.NewPostgresRepository(db.Pool)
+	} else {
+		userRepo = user.NewMemoryRepository()
+	}
+	userService := user.NewService(userRepo, tokenService)
+
+	initCtx, initCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer initCancel()
+	if err := userService.EnsureAdmin(initCtx, "admin@anr-studio.com", "admin123@anr"); err != nil {
+		logger.Warn("could not ensure default admin user", slog.String("error", err.Error()))
+	}
+
+	adminHandler := handler.NewAdminHandler(userService, userRepo, deviceRepo)
+
 	router := transporthttp.NewRouter(transporthttp.RouterConfig{
 		Logger:        logger,
 		HealthHandler: healthHandler,
 		AuthHandler:   authHandler,
+		AdminHandler:  adminHandler,
 		TokenService:  tokenService,
 	})
 
